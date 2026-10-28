@@ -139,6 +139,7 @@ function spin() {
   spinBtn.disabled = true;
   resultEl.classList.remove("pop", "picked");
   resultLabel.textContent = "두근두근…";
+  hideNearby();
   resultName.textContent = "?";
 
   const slice = (Math.PI * 2) / n;
@@ -179,6 +180,7 @@ function showPick(menu) {
   resultEl.classList.add("picked");
   void resultEl.offsetWidth; // restart animation
   resultEl.classList.add("pop");
+  showNearby(menu.name);
 }
 
 function showMessage(text) {

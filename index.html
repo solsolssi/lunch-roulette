@@ -25,6 +25,12 @@
         <p id="result-label" class="result-label">버튼을 눌러 오늘 점심을 정하세요</p>
         <p id="result-name" class="result-name"></p>
       </div>
+      <div id="map-section" class="map-section" hidden>
+        <a id="map-link" class="map-link" target="_blank" rel="noopener"></a>
+        <p id="map-status" class="map-status"></p>
+        <div id="map" class="map" hidden></div>
+        <ol id="place-list" class="place-list"></ol>
+      </div>
     </section>
 
     <section class="panel">
@@ -63,6 +69,8 @@
     </section>
   </main>
 
+  <script src="config.js"></script>
+  <script src="map.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

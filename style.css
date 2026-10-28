@@ -117,6 +117,35 @@ h1 { font-size: 1.8rem; margin: 0; }
 .result-name:empty { display: none; }
 .result.picked .result-name { color: var(--accent); }
 .result.pop .result-name { animation: pop 0.4s ease-out; }
+.map-section { margin-bottom: 8px; }
+.map-link {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #fee500;
+  color: #191919;
+  font-weight: 700;
+  text-decoration: none;
+}
+.map-link:hover { filter: brightness(0.95); }
+.map-status { color: var(--muted); font-size: 0.9rem; margin: 10px 0 0; min-height: 1.4em; }
+.map {
+  width: 100%;
+  height: 280px;
+  margin-top: 10px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.place-list {
+  text-align: left;
+  margin: 10px 0 0;
+  padding-left: 22px;
+}
+.place-list li { padding: 4px 0; }
+.place-list a { color: var(--text); font-weight: 600; }
+.place-meta { display: block; color: var(--muted); font-size: 0.85rem; }
+
 @keyframes pop {
   0% { transform: scale(0.6); opacity: 0; }
   70% { transform: scale(1.1); }
