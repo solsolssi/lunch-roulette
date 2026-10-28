@@ -93,12 +93,30 @@ h1 { font-size: 1.8rem; margin: 0; }
 .spin-btn:disabled { opacity: 0.7; cursor: default; }
 
 .result {
-  font-size: 1.5rem;
-  font-weight: 700;
-  min-height: 2.2em;
   margin: 20px 0 8px;
+  padding: 16px;
+  min-height: 7.5rem;
+  border-radius: 16px;
+  border: 2px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-.result.pop { animation: pop 0.4s ease-out; }
+.result.picked {
+  border: 2px solid var(--accent);
+  background: var(--card);
+}
+.result-label { margin: 0; color: var(--muted); font-size: 1rem; }
+.result-name {
+  margin: 4px 0 0;
+  font-size: clamp(2.2rem, 10vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  word-break: keep-all;
+}
+.result-name:empty { display: none; }
+.result.picked .result-name { color: var(--accent); }
+.result.pop .result-name { animation: pop 0.4s ease-out; }
 @keyframes pop {
   0% { transform: scale(0.6); opacity: 0; }
   70% { transform: scale(1.1); }
@@ -125,8 +143,22 @@ h1 { font-size: 1.8rem; margin: 0; }
   cursor: pointer;
 }
 .chip-btn:hover { border-color: var(--accent); }
+.chip-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
 
 .add-form { display: flex; gap: 8px; }
+.add-form select {
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+}
 .add-form input {
   flex: 1;
   min-width: 0;

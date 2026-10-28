@@ -1,32 +1,40 @@
-const PRESETS = {
-  korean: ["김치찌개", "된장찌개", "제육볶음", "비빔밥", "순대국", "냉면", "갈비탕", "부대찌개"],
-  chinese: ["짜장면", "짬뽕", "탕수육", "마라탕", "볶음밥"],
-  japanese: ["돈까스", "초밥", "라멘", "우동", "규동"],
-  western: ["파스타", "햄버거", "피자", "샐러드", "샌드위치"],
-  snack: ["떡볶이", "김밥", "라면", "순대", "쫄면"],
+const CATEGORIES = {
+  korean: "한식",
+  chinese: "중식",
+  japanese: "일식",
+  western: "양식",
+  snack: "분식",
 };
-PRESETS.all = [
-  "김치찌개", "제육볶음", "비빔밥", "짜장면", "짬뽕",
-  "돈까스", "초밥", "파스타", "햄버거", "떡볶이", "쌀국수", "국밥",
-];
+
+const DEFAULT_MENUS = [
+  ["김치찌개", "korean"], ["제육볶음", "korean"], ["비빔밥", "korean"], ["국밥", "korean"], ["냉면", "korean"],
+  ["짜장면", "chinese"], ["짬뽕", "chinese"], ["마라탕", "chinese"], ["볶음밥", "chinese"],
+  ["돈까스", "japanese"], ["초밥", "japanese"], ["라멘", "japanese"], ["우동", "japanese"],
+  ["파스타", "western"], ["햄버거", "western"], ["피자", "western"], ["샐러드", "western"],
+  ["떡볶이", "snack"], ["김밥", "snack"], ["라면", "snack"],
+].map(([name, cat]) => ({ name, cat }));
 
 const COLORS = [
-  "#e8573f", "#f2a541", "#f6d55c", "#7bc47f", "#3caea3",
+  "#e8573f", "#f2a541", "#d9a520", "#7bc47f", "#3caea3",
   "#4a90d9", "#7a6ad8", "#d76bb0", "#ef8a62", "#9ccc65",
 ];
 
-const STORAGE_KEY = "lunch-roulette";
+const STORAGE_KEY = "lunch-roulette-v2";
 const MAX_HISTORY = 5;
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spin");
 const resultEl = document.getElementById("result");
+const resultName = document.getElementById("result-name");
+const resultLabel = document.getElementById("result-label");
 const listEl = document.getElementById("menu-list");
 const countEl = document.getElementById("count");
 const historyEl = document.getElementById("history-list");
+const filterEl = document.getElementById("filters");
 const addForm = document.getElementById("add-form");
 const addInput = document.getElementById("add-input");
+const addCat = document.getElementById("add-cat");
 
 let state = load();
 let rotation = 0; // radians, wheel rotation
@@ -36,16 +44,22 @@ function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && Array.isArray(saved.menus)) {
-      return { menus: saved.menus, history: saved.history || [] };
+      return { menus: saved.menus, history: saved.history || [], filter: saved.filter || "all" };
     }
   } catch {}
-  return { menus: [...PRESETS.all], history: [] };
+  return { menus: DEFAULT_MENUS.map((m) => ({ ...m })), history: [], filter: "all" };
 }
 
 function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {}
+}
+
+// Menus currently on the wheel, after the category filter.
+function visibleMenus() {
+  if (state.filter === "all") return state.menus;
+  return state.menus.filter((m) => m.cat === state.filter);
 }
 
 function colorAt(i, n) {
@@ -57,7 +71,7 @@ function colorAt(i, n) {
 function drawWheel() {
   const size = canvas.width;
   const r = size / 2;
-  const menus = state.menus;
+  const menus = visibleMenus();
   const n = menus.length;
   ctx.clearRect(0, 0, size, size);
 
@@ -100,14 +114,13 @@ function drawWheel() {
     ctx.font = `bold ${fontSize}px -apple-system, "Apple SD Gothic Neo", sans-serif`;
     ctx.shadowColor = "rgba(0,0,0,0.35)";
     ctx.shadowBlur = 4;
-    ctx.fillText(menus[i], r - 22, 0, r * 0.62);
+    ctx.fillText(menus[i].name, r - 22, 0, r * 0.62);
     ctx.restore();
   }
   ctx.restore();
 }
 
-function indexAtPointer() {
-  const n = state.menus.length;
+function indexAtPointer(n) {
   const slice = (Math.PI * 2) / n;
   // Pointer sits at the top; find which slice is under it after rotation.
   const a = ((-rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
@@ -115,15 +128,18 @@ function indexAtPointer() {
 }
 
 function spin() {
-  const n = state.menus.length;
-  if (spinning || n < 2) {
-    if (n < 2) showResult("메뉴를 2개 이상 넣어주세요", false);
+  const menus = visibleMenus();
+  const n = menus.length;
+  if (spinning) return;
+  if (n < 2) {
+    showMessage("메뉴를 2개 이상 넣어주세요");
     return;
   }
   spinning = true;
   spinBtn.disabled = true;
-  resultEl.classList.remove("pop");
-  resultEl.innerHTML = "&nbsp;";
+  resultEl.classList.remove("pop", "picked");
+  resultLabel.textContent = "두근두근…";
+  resultName.textContent = "?";
 
   const slice = (Math.PI * 2) / n;
   const target = Math.floor(Math.random() * n);
@@ -149,50 +165,66 @@ function spin() {
     } else {
       spinning = false;
       spinBtn.disabled = false;
-      const picked = state.menus[indexAtPointer()];
-      showResult(`오늘 점심은 ${picked}! 🎉`, true);
+      const picked = menus[indexAtPointer(n)];
+      showPick(picked);
       addHistory(picked);
     }
   }
   requestAnimationFrame(frame);
 }
 
-function showResult(text, celebrate) {
-  resultEl.textContent = text;
-  if (celebrate) {
-    void resultEl.offsetWidth; // restart animation
-    resultEl.classList.add("pop");
-  }
+function showPick(menu) {
+  resultLabel.textContent = `오늘 점심은 · ${CATEGORIES[menu.cat]}`;
+  resultName.textContent = `${menu.name} 🎉`;
+  resultEl.classList.add("picked");
+  void resultEl.offsetWidth; // restart animation
+  resultEl.classList.add("pop");
+}
+
+function showMessage(text) {
+  resultEl.classList.remove("pop", "picked");
+  resultLabel.textContent = text;
+  resultName.textContent = "";
 }
 
 function addHistory(menu) {
   const time = new Date().toLocaleString("ko-KR", {
     month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit",
   });
-  state.history.unshift({ menu, time });
+  state.history.unshift({ menu: menu.name, time });
   state.history = state.history.slice(0, MAX_HISTORY);
   save();
   renderHistory();
 }
 
+function renderFilters() {
+  for (const btn of filterEl.querySelectorAll("[data-filter]")) {
+    const active = btn.dataset.filter === state.filter;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", active);
+  }
+}
+
 function renderList() {
+  const menus = visibleMenus();
   listEl.innerHTML = "";
-  state.menus.forEach((m, i) => {
+  menus.forEach((m, i) => {
     const li = document.createElement("li");
     const dot = document.createElement("span");
     dot.className = "dot";
-    dot.style.background = colorAt(i, state.menus.length);
+    dot.style.background = colorAt(i, menus.length);
     const label = document.createElement("span");
-    label.textContent = m;
+    label.textContent = m.name;
     const del = document.createElement("button");
     del.type = "button";
     del.textContent = "×";
-    del.setAttribute("aria-label", `${m} 삭제`);
-    del.addEventListener("click", () => removeMenu(i));
+    del.setAttribute("aria-label", `${m.name} 삭제`);
+    del.addEventListener("click", () => removeMenu(m));
     li.append(dot, label, del);
     listEl.append(li);
   });
-  countEl.textContent = `메뉴 ${state.menus.length}개`;
+  const scope = state.filter === "all" ? "전체" : CATEGORIES[state.filter];
+  countEl.textContent = `${scope} 메뉴 ${menus.length}개`;
 }
 
 function renderHistory() {
@@ -215,40 +247,50 @@ function renderHistory() {
 
 function render() {
   drawWheel();
+  renderFilters();
   renderList();
   renderHistory();
 }
 
-function setMenus(menus) {
+function update(changes) {
   if (spinning) return;
-  state.menus = menus;
+  Object.assign(state, changes);
   save();
   render();
 }
 
-function removeMenu(i) {
-  setMenus(state.menus.filter((_, j) => j !== i));
+function removeMenu(menu) {
+  update({ menus: state.menus.filter((m) => m !== menu) });
 }
+
+filterEl.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-filter]");
+  if (!btn) return;
+  update({ filter: btn.dataset.filter });
+  // Default new menus to the category being viewed.
+  if (state.filter !== "all") addCat.value = state.filter;
+});
 
 addForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  const value = addInput.value.trim();
-  if (!value) return;
-  if (state.menus.includes(value)) {
-    showResult(`'${value}'는 이미 있어요`, false);
+  const name = addInput.value.trim();
+  if (!name) return;
+  if (state.menus.some((m) => m.name === name)) {
+    showMessage(`'${name}'는 이미 있어요`);
   } else {
-    setMenus([...state.menus, value]);
+    const cat = addCat.value;
+    // Switch to a view where the new menu is visible.
+    const filter = state.filter === "all" || state.filter === cat ? state.filter : cat;
+    update({ menus: [...state.menus, { name, cat }], filter });
   }
   addInput.value = "";
   addInput.focus();
 });
 
-document.querySelectorAll("[data-preset]").forEach((btn) => {
-  btn.addEventListener("click", () => setMenus([...PRESETS[btn.dataset.preset]]));
-});
-
-document.getElementById("clear").addEventListener("click", () => {
-  if (confirm("메뉴를 모두 지울까요?")) setMenus([]);
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("기본 메뉴로 되돌릴까요? 추가한 메뉴는 사라져요.")) {
+    update({ menus: DEFAULT_MENUS.map((m) => ({ ...m })), filter: "all" });
+  }
 });
 
 spinBtn.addEventListener("click", spin);

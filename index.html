@@ -21,20 +21,30 @@
         <canvas id="wheel" width="600" height="600" aria-label="메뉴 룰렛"></canvas>
         <button id="spin" class="spin-btn" type="button">돌리기</button>
       </div>
-      <p id="result" class="result" aria-live="polite">&nbsp;</p>
+      <div id="result" class="result" aria-live="polite">
+        <p id="result-label" class="result-label">버튼을 눌러 오늘 점심을 정하세요</p>
+        <p id="result-name" class="result-name"></p>
+      </div>
     </section>
 
     <section class="panel">
-      <div class="presets" role="group" aria-label="메뉴 프리셋">
-        <button type="button" data-preset="all" class="chip-btn">전체</button>
-        <button type="button" data-preset="korean" class="chip-btn">한식</button>
-        <button type="button" data-preset="chinese" class="chip-btn">중식</button>
-        <button type="button" data-preset="japanese" class="chip-btn">일식</button>
-        <button type="button" data-preset="western" class="chip-btn">양식</button>
-        <button type="button" data-preset="snack" class="chip-btn">분식</button>
+      <div id="filters" class="presets" role="group" aria-label="종류별로 골라 돌리기">
+        <button type="button" data-filter="all" class="chip-btn">전체</button>
+        <button type="button" data-filter="korean" class="chip-btn">한식</button>
+        <button type="button" data-filter="chinese" class="chip-btn">중식</button>
+        <button type="button" data-filter="japanese" class="chip-btn">일식</button>
+        <button type="button" data-filter="western" class="chip-btn">양식</button>
+        <button type="button" data-filter="snack" class="chip-btn">분식</button>
       </div>
 
       <form id="add-form" class="add-form">
+        <select id="add-cat" aria-label="메뉴 종류">
+          <option value="korean">한식</option>
+          <option value="chinese">중식</option>
+          <option value="japanese">일식</option>
+          <option value="western">양식</option>
+          <option value="snack">분식</option>
+        </select>
         <input id="add-input" type="text" maxlength="20" placeholder="메뉴 추가 (예: 쌀국수)" autocomplete="off" />
         <button type="submit">추가</button>
       </form>
@@ -43,7 +53,7 @@
 
       <div class="panel-foot">
         <span id="count"></span>
-        <button id="clear" type="button" class="link-btn">모두 지우기</button>
+        <button id="reset" type="button" class="link-btn">기본 메뉴로 되돌리기</button>
       </div>
     </section>
 
