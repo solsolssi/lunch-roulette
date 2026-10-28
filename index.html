@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>점심 메뉴 룰렛</title>
+  <meta name="description" content="오늘 점심 뭐 먹지? 룰렛을 돌려서 정하세요." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍱</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <h1>🍱 점심 메뉴 룰렛</h1>
+      <p class="sub">오늘 점심, 고민은 룰렛에게 맡기세요.</p>
+    </header>
+
+    <section class="wheel-area">
+      <div class="wheel-wrap">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel" width="600" height="600" aria-label="메뉴 룰렛"></canvas>
+        <button id="spin" class="spin-btn" type="button">돌리기</button>
+      </div>
+      <p id="result" class="result" aria-live="polite">&nbsp;</p>
+    </section>
+
+    <section class="panel">
+      <div class="presets" role="group" aria-label="메뉴 프리셋">
+        <button type="button" data-preset="all" class="chip-btn">전체</button>
+        <button type="button" data-preset="korean" class="chip-btn">한식</button>
+        <button type="button" data-preset="chinese" class="chip-btn">중식</button>
+        <button type="button" data-preset="japanese" class="chip-btn">일식</button>
+        <button type="button" data-preset="western" class="chip-btn">양식</button>
+        <button type="button" data-preset="snack" class="chip-btn">분식</button>
+      </div>
+
+      <form id="add-form" class="add-form">
+        <input id="add-input" type="text" maxlength="20" placeholder="메뉴 추가 (예: 쌀국수)" autocomplete="off" />
+        <button type="submit">추가</button>
+      </form>
+
+      <ul id="menu-list" class="menu-list"></ul>
+
+      <div class="panel-foot">
+        <span id="count"></span>
+        <button id="clear" type="button" class="link-btn">모두 지우기</button>
+      </div>
+    </section>
+
+    <section class="history">
+      <h2>최근 결과</h2>
+      <ol id="history-list"></ol>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
